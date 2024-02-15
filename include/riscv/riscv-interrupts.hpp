@@ -22,10 +22,10 @@ namespace riscv {
         static constexpr std::uint32_t usi = 0;
         static constexpr std::uint32_t uti = 4;
         static constexpr std::uint32_t uei = 8;
-    };/*interrupts*/
+    }; /*interrupts*/
     struct exceptions {
-    };/*exceptions*/
-} /* riscv */
+    }; /*exceptions*/
+}// namespace riscv
 
 
 #endif /* RISCV_INTERRUPTS_HPP */

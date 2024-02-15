@@ -30,3 +30,19 @@
 *.exe
 *.out
 *.app
+
+
+# This repo
+*~
+build_target
+build_docker_native
+build_docker_target
+build_docker
+build_native
+.pio
+#*
+.vscode
+platformio/.cache
+test/external
+test/lib
+test/include

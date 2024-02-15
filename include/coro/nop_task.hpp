@@ -1,5 +1,10 @@
 /*
+  C++ Co-routine task concept.
+
   SPDX-License-Identifier: Unlicense
+
+  https://five-embeddev.com/
+
 */
 
 #ifndef NOP_TASK_HPP
@@ -16,20 +21,24 @@
  */
 struct nop_task {
 
-    static constexpr size_t TASK_HEAP_SIZE=128;
+#ifdef HOST_EMULATION
+    static constexpr size_t TASK_HEAP_SIZE = 4096;
+#else
+    static constexpr size_t TASK_HEAP_SIZE = 512;
+#endif
 
     /** Structure that implements the promise object used by co-routines.
      */
     struct promise_type {
-        
-        nop_task get_return_object() { 
-            return {}; 
+
+        nop_task get_return_object() {
+            return {};
         }
         std::suspend_never initial_suspend() {
             return {};
         }
-        std::suspend_never final_suspend() noexcept { 
-            return {}; 
+        std::suspend_never final_suspend() noexcept {
+            return {};
         }
         void return_void() {
         }
@@ -43,7 +52,7 @@ struct nop_task {
         }
 
         /** Replacement memory allocation for the co-routine state.
-           
+
            https://en.cppreference.com/w/cpp/language/coroutines#Heap_allocation
 
            Allocate within a local array. Allocation is once off, so
@@ -51,23 +60,22 @@ struct nop_task {
 
          */
         static void* operator new(std::size_t size) noexcept {
-            static std::size_t task_heap_index_ = 0;
             if ((task_heap_index_ + size) < TASK_HEAP_SIZE) {
                 // Simply allocate the next region in the task heap
                 auto retval = static_cast<void*>(&task_heap_[task_heap_index_]);
-                task_heap_index_+=size;
+                task_heap_index_ += size;
                 return retval;
             }
             return nullptr;
         }
-        static void operator delete(void *ptr) {
+        static void operator delete(void* ptr) {
             // TODO - This implementation only allows for a fixed number of tasks.
+            (void)ptr;
         }
 
         inline static std::array<std::byte, TASK_HEAP_SIZE> task_heap_;
-
+        inline static std::size_t task_heap_index_{ 0 };
     };
-
 };
 
-#endif // NOP_TASK
+#endif// NOP_TASK

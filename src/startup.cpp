@@ -2,9 +2,11 @@
    Simple C++ startup routine to setup CRT
    SPDX-License-Identifier: Unlicense
 
-   (https://five-embeddev.com/ | http://www.shincbm.com/) 
+   (https://five-embeddev.com/ | http://www.shincbm.com/)
 
 */
+
+#if !defined(HOST_EMULATION)
 
 #include <algorithm>
 #include <cstdint>
@@ -27,23 +29,23 @@ extern "C" function_t __init_array_start[];
 extern "C" function_t __init_array_end[];
 
 // This function will be placed by the linker script according to the section
-extern "C" void _enter(void)  __attribute__ ((naked, section(".text.metal.init.enter")));
+extern "C" void _enter(void) __attribute__((naked, section(".text.metal.init.enter")));
 
 // Define the symbols with "C" naming as they are used by the assembler
-extern "C" void _start(void) __attribute__ ((noreturn));
-extern "C" void _Exit(int exit_code) __attribute__ ((noreturn));
+extern "C" void _start(void) __attribute__((noreturn));
+extern "C" void _Exit(int exit_code) __attribute__((noreturn));
 
 // Standard entry point, no arguments.
-extern int main(void);
+extern int main(int argc, const char** argv);
 
 // The linker script will place this in the reset entry point.
 // It will be 'called' with no stack or C runtime configuration.
 // NOTE - this only supports a single hart.
 // tp will not be initialized
-void _enter(void)   {
+void _enter(void) {
     // Setup SP and GP
     // The locations are defined in the linker script
-    __asm__ volatile  (
+    __asm__ volatile(
         ".option push;"
         // The 'norelax' option is critical here.
         // Without 'norelax' the global pointer will
@@ -53,9 +55,9 @@ void _enter(void)   {
         ".option pop;"
         "la    sp, _sp;"
         "jal   zero, _start;"
-        :  /* output: none %0 */
+        : /* output: none %0 */
         : /* input: none */
-        : /* clobbers: none */); 
+        : /* clobbers: none */);
     // This point will not be executed, _start() will be called with no return.
 }
 
@@ -64,33 +66,42 @@ void _start(void) {
 
     // Init memory regions
     // Clear the .bss section (global variables with no initial values)
-    std::fill(&metal_segment_bss_target_start, // cppcheck-suppress mismatchingContainers
+    std::fill(&metal_segment_bss_target_start,// cppcheck-suppress mismatchingContainers
               &metal_segment_bss_target_end,
               0U);
     // Initialize the .data section (global variables with initial values)
-    std::copy(&metal_segment_data_source_start, // cppcheck-suppress mismatchingContainers
-              &metal_segment_data_source_start + (&metal_segment_data_target_end-&metal_segment_data_target_start),
+    std::copy(&metal_segment_data_source_start,// cppcheck-suppress mismatchingContainers
+              &metal_segment_data_source_start + (&metal_segment_data_target_end - &metal_segment_data_target_start),
               &metal_segment_data_target_start);
     // Initialize the .itim section (code moved from flash to SRAM to improve performance)
-    std::copy(&metal_segment_itim_source_start, // cppcheck-suppress mismatchingContainers
+    std::copy(&metal_segment_itim_source_start,// cppcheck-suppress mismatchingContainers
               &metal_segment_itim_source_start + (&metal_segment_itim_target_end - &metal_segment_itim_target_start),
               &metal_segment_itim_target_start);
 
     // Call constructors
-    std::for_each( __init_array_start,
-                   __init_array_end, 
-                   [](const function_t pf) {pf();});
+    std::for_each(__init_array_start,
+                  __init_array_end,
+                  [](const function_t pf) { pf(); });
     // Jump to main
-    auto rc = main();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    int rc = main(0, nullptr);
+#pragma GCC diagnostic pop
     // Don't expect to return, if so busy loop in the exit function.
     _Exit(rc);
 }
 
 // This should never be called. Busy loop with the CPU in idle state.
-void _Exit(int exit_code) { 
+void _Exit(int exit_code) {
+    (void)exit_code;
     // Halt
     while (true) {
-        __asm__ volatile ("wfi");
+        __asm__ volatile("wfi");
     }
 }
 
+extern "C" {
+void* __gxx_personality_v0(int, int, uint64_t, void*);
+void* __dso_handle __attribute__((weak)) = nullptr;
+}
+#endif

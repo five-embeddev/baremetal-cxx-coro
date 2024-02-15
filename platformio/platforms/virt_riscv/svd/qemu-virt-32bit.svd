@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD_Schema_1_0.xsd" >
+  <vendor>QEMU</vendor>
+  <vendorID>QEMUE</vendorID>
+  <name>virt-32bit</name>
+  <series></series>
+  <version></version>
+  <description>32-bit RV32GC core
+  </description>
+
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <size>32</size>
+  <resetValue>0x00000000</resetValue>
+  <resetMask>0xFFFFFFFF</resetMask>
+
+  <cpu>
+    <name>other</name>
+    <endian>little</endian>
+  </cpu>
+
+  <peripherals>
+
+<peripheral>
+      <name>PLIC</name>
+      <description>Platform-Level Interrupt Controller.</description>
+      <baseAddress>0x0C000000</baseAddress>
+      <groupName>PLIC</groupName>
+      <size>32</size>
+      <access>read-write</access>
+
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x200008</size>
+        <usage>registers</usage>
+      </addressBlock>
+
+      <registers>
+
+        <register>
+          <dim>52</dim>
+          <dimIncrement>4</dimIncrement>
+          <name>PRIORITY[%s]</name>
+          <description>PLIC Interrupt Priority Register.</description>
+          <addressOffset>0x000000</addressOffset>
+          <fields>
+            <field><name>PRIORITY</name><lsb>0</lsb><msb>2</msb></field>
+          </fields>
+        </register>
+
+        <register>
+          <name>PENDING_1</name>
+          <description>PLIC Interrupt Pending Register 1.</description>
+          <addressOffset>0x001000</addressOffset>
+        </register>
+
+        <register>
+          <name>PENDING_2</name>
+          <description>PLIC Interrupt Pending Register 2.</description>
+          <addressOffset>0x001004</addressOffset>
+        </register>
+
+        <register>
+          <name>ENABLE_1</name>
+          <description>PLIC Interrupt Enable Register 1.</description>
+          <addressOffset>0x002000</addressOffset>
+        </register>
+
+        <register>
+          <name>ENABLE_2</name>
+          <description>PLIC Interrupt Enable Register 2.</description>
+          <addressOffset>0x002004</addressOffset>
+        </register>
+        
+        <register>
+          <name>THRESHOLD</name>
+          <description>PLIC Interrupt Priority Threshold Register.</description>
+          <addressOffset>0x200000</addressOffset>
+          <fields>
+            <field><name>THRESHOLD</name><lsb>0</lsb><msb>2</msb></field>
+          </fields>
+        </register>
+
+        <register>
+          <name>CLAIM</name>
+          <description>PLIC Claim/Complete Register.</description>
+          <addressOffset>0x200004</addressOffset>
+        </register>
+
+      </registers>
+    </peripheral> <!-- PLIC -->
+
+    <peripheral>
+      <name>CLINT</name>
+      <description>Core Local Interruptor.</description>
+      <baseAddress>0x02000000</baseAddress>
+      <groupName>CLINT</groupName>
+      <size>32</size>
+      <access>read-write</access>
+
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x10000</size>
+        <usage>registers</usage>
+      </addressBlock>
+
+      <registers>
+
+        <register>
+          <name>MSIP</name>
+          <description>Machine Software Interrupt Pending Register.</description>
+          <addressOffset>0x0000</addressOffset>
+        </register>
+
+        <register>
+          <name>MTIMECMP_LO</name>
+          <description>Machine Timer Compare Register Low.</description>
+          <addressOffset>0x4000</addressOffset>
+        </register>
+
+        <register>
+          <name>MTIMECMP_HI</name>
+          <description>Machine Timer Compare Register High.</description>
+          <addressOffset>0x4004</addressOffset>
+        </register>
+
+        <register>
+          <name>MTIME_LO</name>
+          <description>Machine Timer Register Low.</description>
+          <addressOffset>0xBFF8</addressOffset>
+        </register>
+
+        <register>
+          <name>MTIME_HI</name>
+          <description>Machine Timer Register High.</description>
+          <addressOffset>0xBFFC</addressOffset>
+        </register>
+
+      </registers>
+    </peripheral> <!-- CLINT -->
+
+  </peripherals>
+</device>

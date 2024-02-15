@@ -209,6 +209,7 @@ SECTIONS
         *(.text.startup .text.startup.*)
         *(.text .text.*)
         *(.gnu.linkonce.t.*)
+        *(.gcc_except_table.*)
     } >rom :text
 
     /* RAM SECTION
@@ -290,12 +291,4 @@ SECTIONS
         PROVIDE( __heap_end = . );
     } >ram :ram
 
-    /* C++ exception handling information is
-     * not useful with our current runtime environment,
-     * and it consumes flash space. Discard it until
-     * we have something that can use it
-     */
-    /DISCARD/ : {
-	*(.eh_frame .eh_frame.*)
-    }
 }

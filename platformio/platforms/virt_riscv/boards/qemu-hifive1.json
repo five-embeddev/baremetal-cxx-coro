@@ -1,0 +1,34 @@
+{
+  "build": {
+    "f_cpu": "320000000L",
+    "hwids": [
+      [
+        "0x0403",
+        "0x6010"
+      ]
+    ],
+    "mabi": "ilp32",
+    "march": "rv32gc",
+    "mcmodel": "medlow"
+  },
+  "debug": {
+    "init_cmds": [
+      "$INIT_BREAK"
+    ],
+    "svd_path": "qemu-virt-32bit.svd",
+    "qemu_machine": "virt"
+  },
+  "frameworks": [
+  ],
+  "name": "QEMU Virt 32bit 8 Cores",
+  "upload": {
+    "maximum_ram_size": 16384,
+    "maximum_size": 16777216,
+    "protocol": "ftdi",
+    "protocols": [
+      "ftdi"
+    ]
+  },
+  "url": "https://www.qemu.org/docs/master/system/riscv/virt.html",
+  "vendor": "QEMU"
+}

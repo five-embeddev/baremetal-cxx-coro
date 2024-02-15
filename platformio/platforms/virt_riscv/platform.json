@@ -1,0 +1,23 @@
+{
+  "name": "virt_riscv",
+  "title": "Virtual RISC-V",
+  "description": "Virtual RISC-V",
+  "homepage": "https://www.five-embeddev.com/",
+  "license": "Apache-2.0",
+  "keywords": ["RISC-V"],
+  "owner": "five-embeddev",
+  "engines": {
+    "platformio": "^6"
+  },
+  "version": "0.0.1",
+  "frameworks": {
+  },
+  "packages": {
+    "tool-qemu-riscv": {
+      "type": "debugger",
+      "optional": true,
+      "owner": "platformio",
+      "version": "~1.40100.0"
+    }
+  }
+}
