@@ -40,8 +40,6 @@ struct awaitable_timer {
     void await_suspend(std::coroutine_handle<> handle) {
         // Insert into the schedule.
         scheduler_.insert(handle, SCHEDULER::make_condition(delay_));
-        // Update the schedule and resume any pending entries - but do not block.
-        scheduler_.wakeup_pending();
     }
     void await_resume() {
         // NOTE - At this point the member may have been clobered - dont' trust _delay..
