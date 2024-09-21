@@ -1,0 +1,169 @@
+@startuml
+
+box "CPU"
+    participant "Interrupt\ncontroller" as ic
+end box
+
+box "Active Functions"
+    participant "main()" as main
+    participant "nop_task\nresuming_on_delay(\nSCHEDULER_T &schedule,\nstd::chrono::microseconds period,\nvolatile uint32_t& resume_count)" as coro
+    participant "isr_handler()" as isr
+end box
+
+box "Object Space"
+    participant "C++ Awaitable" as awaitable
+    participant "scheduler_delay<timer>" as scheduler
+    collections "static_list<schedule_entry>" as waiting
+end box
+
+'' Power on
+activate ic
+    ic -> main : reset, enter main()
+
+    '' Enter main()
+    activate main
+        main -> scheduler : construct scheduler_delay<> scheduler;
+
+        activate scheduler
+            scheduler -> waiting: construct static_list<> waiting;
+            note right
+                waiting list = []
+            end note
+
+            activate waiting
+                main -> main : resume_count = 0
+                main -> coro : call resuming_on_delay(scheduler, 100ms, resume_count)
+
+                '' First call
+            deactivate main
+            activate coro
+                coro --> main : return nop_task
+                coro -> coro : construct-\nnop_task()
+                coro -> coro : run until-\nco_await scheduled_delay{schedule,100ms}
+                coro -> awaitable : construct-\nawaitable_timer awaitable{schedule,100ms}
+                activate awaitable
+                    coro -> awaitable : awaitable.await_suspend(handle)
+                    awaitable -> scheduler : scheduler.insert(handle, now() + 100ms)
+                    note right
+                        now() = 0ms
+                    end note
+                    scheduler -> waiting : waiting.emplace(handle, 0ms + 100ms)
+                    note right
+                        waiting list = [{handle, 0ms + 100ms}]
+                    end note
+                    waiting -> scheduler : return
+                    scheduler -> awaitable : return
+                    awaitable --> main : resume
+                deactivate coro
+
+newpage
+
+    loop 10 times: i
+                    activate main
+                        main -> scheduler: resume(now())
+                        note right
+                            now() = i*100ms
+                        end note
+                        scheduler -> waiting : waiting.begin()
+                        waiting -> scheduler : i = {handle, i*100ms + 100ms}
+                        scheduler -> main : return true, i*100ms + 100ms
+                        main -> ic : timer deadline = i*100ms + 100ms
+                        main -> ic : wfi enter
+                    deactivate main
+
+                    ic -> isr : timer interrupt = i*100ms + 100ms
+                    activate isr
+                        isr -> ic : exit
+                    deactivate isr
+                    ic -> main : wfi exit
+
+                    activate main
+                        main -> scheduler : resume(now())
+                        note right
+                            now() = i*100ms + 100ms
+                        end note
+                        scheduler -> waiting : waiting.begin()
+                        waiting -> scheduler : i = {handle, i*100ms + 100ms}
+                        scheduler -> waiting : erase(i)
+                        note right
+                            waiting list = []
+                        end note
+                        scheduler -> coro : handle.resume()
+                    deactivate main
+
+                deactivate awaitable
+                activate coro
+                    coro -> coro: resume_count = i + 1
+                    coro -> coro : run until co_await scheduled_delay{schedule,100ms}
+                    coro -> awaitable : construct awaitable_timer awaitable{schedule,100ms}
+                activate awaitable
+                    coro -> awaitable : await_suspend(handle)
+                    awaitable -> scheduler : scheduler.insert(handle, now() + 100ms)
+                    note right
+                        now() = i*100ms + 100ms
+                    end note
+                    scheduler -> waiting : waiting.emplace(handle, i*100ms + 100ms + 100ms)
+                    note right
+                        waiting list = [{handle, i*100ms + 100ms}]
+                    end note
+                    waiting -> scheduler : return
+                    scheduler -> awaitable : return
+                    awaitable --> main : resume
+                deactivate coro
+                activate main
+
+    end
+
+newpage
+
+
+                main -> scheduler: resume(now())
+                note right
+                    now() = 9*100ms
+                end note
+                scheduler -> waiting : waiting.begin()
+                waiting -> scheduler : i = {handle, 9*100ms + 100ms}
+                scheduler -> main : return true, 9*100ms + 100ms
+                main -> ic : timer deadline = 9*100ms + 100ms
+                main -> ic : wfi enter
+            deactivate main
+
+            ic -> isr : timer interrupt = 9*100ms + 100ms
+            activate isr
+                isr -> ic : exit
+            deactivate isr
+            ic -> main : wfi exit
+
+            activate main
+                main -> scheduler : resume(now())
+                note right
+                    now() = 10*100ms
+                end note
+                scheduler -> waiting : waiting.begin()
+                waiting -> scheduler : i = {handle, 9*100ms + 100ms}
+                scheduler -> waiting : erase(i)
+                note right
+                    waiting list = []
+                end note
+                scheduler -> coro : handle.resume()
+            deactivate main
+
+        deactivate awaitable
+        activate coro
+            coro -> coro: resume_count = 9 + 1
+            coro -> coro : run until competion
+            coro -> main : co_return
+        deactivate coro
+        activate main
+            main -> scheduler : resume(now())
+            note right
+                now() = 10*100ms
+            end note
+            scheduler -> waiting : waiting.begin()
+            waiting -> scheduler : waiting.end()
+            scheduler -> main : return false, empty
+        deactivate waiting
+    deactivate scheduler
+deactivate main
+
+@enduml

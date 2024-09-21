@@ -1,0 +1,88 @@
+@startuml
+
+box "Active Function"
+    participant "Standard Function:\nmain()" as main
+    participant "Co-routine:\nperiodic()" as coro
+end box
+
+box "C++\nCo-routine\nSupport"
+    participant "keyword\nco_await" as co_await
+end box
+box "Abstracted\nOS"
+    participant "Kernel" as kernel
+end box
+
+box "CPU"
+    participant "Interrupt\ncontroller" as ic
+end box
+
+'' Power on
+activate ic
+    ic -> kernel : reset
+    activate kernel
+    kernel -> main : call main()
+    note right : pending = {}
+
+    '' Enter main()
+    activate main
+                main -> coro : call\ntask=periodic(100ms)
+                note right: task periodic(std::chrono::microseconds period)
+
+                '' First call
+            deactivate main
+            activate coro
+                coro --> main : return task
+                note right : compiler has identified a co-routine\nand created the task structure
+                coro -> coro : resume_count = 0
+                coro -> coro : run until-\nco_await
+                coro -> co_await : co_await 100ms
+                deactivate coro
+                activate co_await
+                    co_await -> kernel : store 100ms, handle
+                    note right : pending = {task}
+                    co_await --> main : resume
+
+    loop 10 times: i
+                    activate main
+                        main -> kernel: wait()
+                    deactivate main
+                        note right : pending = {task, main}
+                        kernel -> ic : timer wait 100ms\nwfi
+
+                    ic -> kernel : wfi wakeup
+                    kernel -> coro : handle.resume()
+                deactivate co_await
+                activate coro
+                    note right : pending = {main}
+                    coro -> coro: resume_count = i + 1
+                    coro -> coro : run until-\nco_await
+                    coro -> co_await : co_await 100ms
+                deactivate coro
+                activate co_await
+                    co_await -> kernel : store 100ms, handle
+                    note right : pending = {main, task}
+                    co_await --> kernel : resume
+                kernel -> main : return
+                activate main
+                note right : pending = {task}
+    end
+                main -> kernel: wait()
+            deactivate main
+                note right : pending = {task, main}
+                kernel -> ic : timer wait 100ms\nwfi
+
+                ic -> kernel : wfi wakeup
+                kernel -> coro : handle.resume()
+        deactivate co_await
+        activate coro
+            note right : pending = {main}
+            coro -> coro: resume_count = 9 + 1
+            coro -> coro : run until competion
+            coro --> main : co_return
+        deactivate coro
+            kernel -> main: return
+        activate main
+            note right : pending = {}
+        main -> main : busy loop
+
+@enduml

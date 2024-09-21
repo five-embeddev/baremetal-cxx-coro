@@ -1,0 +1,133 @@
+@startuml
+
+left to right direction
+
+package "C++ Language Concepts" as lang_concepts {
+
+note as link
+[[https://en.cppreference.com/w/cpp/language/coroutines From C++ Reference]]
+end note
+
+
+   interface "C++ 20 Coroutine Promise" as cpp20_coro_promise { 
+       get_return_object() : <<C++ 20 Task Type>>
+       initial_suspend() : <<Trivial Awaitables>>
+       final_suspend() : <<Trivial Awaitables>>
+       return_void() : void
+       unhandled_exception() : void
+   }
+   note right of cpp20_coro_promise 
+   The promise object, manipulated from inside the coroutine. 
+   The coroutine submits its result or exception through this object. 
+   Promise objects are in no way related to std::promise.
+   end note
+
+   cpp20_coro_task +-right- cpp20_coro_promise : imports datatype
+
+   interface "C++ 20 Task Type" as cpp20_coro_task {
+       <<datatype>> promise_type : <<C++ 20 Coroutine Promise>>
+   }
+}
+
+
+package "Compiler Defined Types" as compiler_types {
+   class "C++ 20 Coroutine Suspend State" as cpp20_coro_suspend {
+   }
+
+   class "C++ 20 Coroutine State" as cpp20_coro_state { 
+   promise: <C++ 20 Coroutine Promise>
+   suspension_point: C++ 20 Coroutine Suspend State
+   function_parameters[]
+   local_variables[]
+   temporary_variables[]
+   {static} operator new(std::size_t size): void *
+   {static} operator delete(std::size_t size): void *
+   }
+
+   cpp20_coro_state o- cpp20_coro_promise
+   cpp20_coro_state o- cpp20_coro_suspend
+
+   note top of cpp20_coro_state
+   <b>By default this is allocated on the HEAP.</b>
+   The operator can be overridden to allow
+   for no heap operation.
+   end note
+}
+
+
+package "Five Embeddev Baremetal Coroutines" as impl {
+
+   class nop_task {
+        <<datatype>> promise_type : nop_task_promise_type
+   }
+   
+   
+   class nop_task_promise_type {
+       get_return_object() : nop_task
+       initial_suspend() : std::suspend_never
+       final_suspend() : std::suspend_never 
+       return_void() : void
+       unhandled_exception() : void
+   }
+   
+   
+   cpp20_coro_promise <|-down- nop_task_promise_type : implements <
+   cpp20_coro_task <|-down- nop_task  : implements <
+
+   nop_task +- nop_task_promise_type : imports datatype
+   cpp20_coro_state o-- nop_task_promise_type
+
+
+   note bottom of nop_task
+   <b>By default this is allocated on the STACK.</b>
+   This is the return type of an initialized coroutine.
+   (That is, it is returned by at the first suspension of the 
+   coroutine, NOT the completion.)   
+   It is allocated together with the C++ 20 Coroutine state.
+   However, this task object is allocated on the stack.
+   end note
+
+}
+
+
+package "C++ Language Concepts" as concepts2 {
+   
+   interface "Trivial Awaitables" as cpp20_trivial_awaitable
+
+}
+
+
+package "C++ Stdlib <coroutine>"  as stdlib {
+
+   note as include_link
+      [[https://en.cppreference.com/w/cpp/header/coroutine #include <coroutine>]]
+   end note
+ 
+   class "std::coroutine_handle" as coro_handle {
+       +resume()
+       +destroy()
+   }
+
+   note top of coro_handle
+   The coroutine handle, manipulated from outside the coroutine. 
+   This is a non-owning handle used to resume execution of 
+   the coroutine or to destroy the coroutine frame.
+   end note
+   
+   
+   class std::suspend_never
+   class std::suspend_always
+
+   std::suspend_never --- nop_task_promise_type
+   
+   cpp20_trivial_awaitable <|- std::suspend_never 
+   cpp20_trivial_awaitable <|- std::suspend_always
+   
+   coro_handle <|-- cpp20_coro_state : < resolves to
+
+   cpp20_trivial_awaitable --- cpp20_coro_promise
+
+}
+
+
+@enduml

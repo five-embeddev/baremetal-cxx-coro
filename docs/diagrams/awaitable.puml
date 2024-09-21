@@ -1,0 +1,73 @@
+@startuml
+
+package "C++ Language Concepts" as cpp_concepts {
+
+   note as link
+   [[https://en.cppreference.com/w/cpp/language/coroutines From C++ Reference]]
+   end note
+
+   interface "C++ Coroutine Awaitable" as awaitable {
+       + await_ready()
+       + await_suspend(coroutine_handle<>)
+       + await_resume()
+   }
+
+    interface "C++ Operators" as co_await_lang {
+       +{operator} co_await(...) : awaitable
+    }
+
+    co_await_lang "returns" .-right-- awaitable
+
+}
+
+
+package "C++ Stdlib, std"  as cpp_stdlib {
+    class coroutine_handle<PROMISE_T>
+    package "chrono" {
+       class microseconds
+    }
+}
+
+package "Five Embeddev Baremetal Coroutines" as five_embeddev {
+
+    awaitable <|-down- awaitable_timer
+
+    struct scheduled_delay<SCHEDULER_T=scheduler_ordered, DELAY_T=microseconds> {
+       +scheduler: SCHEDULER_T
+       +delay: DELAY_T
+    }
+
+    interface "C++ Operators" as co_await {
+       +{operator} co_await(scheduled_delay &&) : awaitable_timer<SCHEDULER_T>
+    }
+
+    co_await_lang <|-down- co_await
+
+    co_await "consumes" .-- scheduled_delay
+    co_await "returns" .-- awaitable_timer
+
+    awaitable_timer o-down- SCHEDULER_T
+    awaitable_timer o-- DELAY_T
+    awaitable_timer .-down- coroutine_handle
+
+    scheduled_delay o-down- SCHEDULER_T
+    scheduled_delay o-- DELAY_T
+
+    class awaitable_timer<SCHEDULER_T=scheduler_ordered, DELAY_T=microsecondsx> {
+       + awaitable_timer(s: SCHEDULER_T, d: DELAY_T)
+       + await_ready(): bool
+       + await_suspend(coroutine_handle<>)
+       + await_resume()
+       - scheduler_: SCHEDULER_T
+       - delay_ : DELAY_T
+    }
+
+    abstract SCHEDULER_T {
+       + insert(handle : std::coroutine_handle<>, condition: WAKE_CONDITION_T)
+    }
+
+    DELAY_T .-down- microseconds
+}
+
+
+@enduml

@@ -1,0 +1,140 @@
+@startuml
+
+package "C++ Language Concepts" {
+
+note as link
+[[https://en.cppreference.com/w/cpp/language/coroutines From C++ Reference]]
+end note
+
+   interface "C++ Coroutine Awaitable" as awaitable {
+       + await_ready()
+       + await_suspend(coroutine_handle<>)
+       + await_resume()
+   }
+}
+
+package "std::chrono" {
+    class duration
+    class microseconds
+
+
+}
+package "std" {
+    class coroutine_handle<PROMISE_T>
+}
+
+package "Static List" {
+    class static_list<ELEMENT_TYPE, MAX_TASKS> {
+        +empty() : bool
+     + erase(iterator)
+     + emplace(<ELEMENT_TYPE> &&)
+     + emplace_back(<ELEMENT_TYPE> &&)
+     + pop_front()
+     + begin() : iterator
+     + end() : iterator
+    }
+    note right of static_list
+    Mimics `std::list<>`
+    but does not allocate memory
+    dynamcally. Number of elements is
+    fixed to MAX_TASKS.
+    end note
+}
+
+
+package "Five Embeddev Baremetal Coroutines" {
+
+
+    abstract CLOCK_T {
+        {type} duration;
+        {type} time_point;
+    }
+
+    abstract WAKE_CONDITION_T {
+        +bool ready_to_wait(condition: WAKE_CONDITION_T) -> bool
+    }
+
+    abstract SCHEDULER_T {
+       + insert(handle : std::coroutine_handle<>, condition: WAKE_CONDITION_T)
+    }
+    SCHEDULER_T .-- WAKE_CONDITION_T
+
+    duration <|-- CLOCK_T
+
+    class schedule_by_delay<CLOCK_T> {
+       +{using} duration : CLOCK_T::duration
+       +{using} time_point : CLOCK_T::time_point
+       +schedule_by_delay(delay: duration )
+       +ready_to_wake(current_time: schedule_by_delay) : bool
+       +now() : time_point
+       +delay() : duration
+       -expires_ : time_point
+    }
+
+    WAKE_CONDITION_T  <|- schedule_by_delay
+    schedule_by_delay o- CLOCK_T::time_point
+
+    schedule_by_delay .-[norank]- CLOCK_T
+
+    class schedule_entry<WAKE_CONDITION_T> {
+        +schedule_entry(handle: coroutine_handle, wake_condition: WAKE_CONDITION_T)
+        +wake_condition(): WAKE_CONDITION_T
+        +ready_to_wake(ready_condition: WAKE_CONDITION_T): bool
+        +handle(): coroutine_handle<>
+        -handle_: coroutine_handle<>
+        -wake_condition: WAKE_CONDITION_T
+    }
+
+    schedule_entry "1" o-[norank]-- "1" coroutine_handle
+    schedule_entry "1" o-right-  WAKE_CONDITION_T
+    schedule_entry .-right- WAKE_CONDITION_T
+
+    class scheduler_ordered<WAKE_CONDITION_T,MAX_TASKS>  {
+        +{static} make_condition(...): WAKE_CONDITION_T
+        +empty(): bool
+        +insert(handle: coroutine_handle, wake_condition: WAKE_CONDITION_T)
+        +update(ready_condition: WAKE_CONDITION_T): bool, WAKE_CONDITION_T
+        -waiting_[MAX_TASKS]: static_list<schedule_entry>
+    }
+    scheduler_ordered <|- SCHEDULER_T
+    scheduler_ordered .-- WAKE_CONDITION_T
+    scheduler_ordered "1" o-down-- "1" static_list
+    scheduler_ordered "  1  " *- "0..MAX_TASKS-1" schedule_entry
+    scheduler_ordered .-[norank]- coroutine_handle
+
+
+    class awaitable_timer<SCHEDULER_T=schedule_ordered, DELAY_T=microsecondsx> {
+       + awaitable_timer(s: SCHEDULER_T, d: DELAY_T)
+       + await_ready(): bool
+       + await_suspend(coroutine_handle<>)
+       + await_resume()
+       - scheduler_: SCHEDULER_T
+       - delay_ : DELAY_T
+    }
+
+    awaitable <|-left-- awaitable_timer
+
+    class scheduled_delay<SCHEDULER_T=schedule_ordered, DELAY_T=microseconds> {
+       +scheduler: SCHEDULER_T
+       +delay: DELAY_T
+       +{operator} co_await(scheduled_delay &&) : awaitable_timer<SCHEDULER_T>
+    }
+
+    note right of scheduled_delay
+    Operator co_await is a free function.
+    It is passed scheduled_delay<> to enable operator to be overloaded.
+    end note
+
+    awaitable_timer o-down- SCHEDULER_T
+    awaitable_timer o-[norank]- DELAY_T
+    awaitable_timer .-left-- coroutine_handle
+
+    scheduled_delay o-down- SCHEDULER_T
+    scheduled_delay o-- DELAY_T
+    scheduled_delay .-down- awaitable_timer
+
+    DELAY_T .-- CLOCK_T
+
+}
+
+@enduml
