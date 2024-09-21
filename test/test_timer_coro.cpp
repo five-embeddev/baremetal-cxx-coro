@@ -73,27 +73,24 @@ nop_task resuming_on_delay(
 
 void test_single_coroutine(void) {
     // Inttialize coroutine 
-    // Class to manage timer co-routines
-    scheduler<schedule_by_delay<test_clock>> coro_scheduler;
+    // Class to manage timer co-routines 
+    scheduler_delay<test_clock> coro_scheduler;
     unsigned int resume_count{0};
     constexpr unsigned int iterations = 10;
     constexpr auto delay = 100ms;
     constexpr auto total_time = delay * iterations;
-    resuming_on_delay(coro_scheduler, delay, iterations, resume_count);
+    auto task = resuming_on_delay(coro_scheduler, delay, iterations, resume_count);
 
     const auto start_time = test_clock::now();
     auto elapsed_time = start_time  - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
-        if (!pending) {
-            break;
-        }
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
         elapsed_time = start_time  - test_clock::now();
-    } while (elapsed_time < total_time);
+    } while (!task.done());
     TEST_ASSERT_EQUAL_UINT(resume_count, iterations);
 }
 
@@ -101,7 +98,7 @@ void test_interleaving_coroutines(void) {
 
     // Inttialize coroutine 
     // Class to manage timer co-routines
-    scheduler<schedule_by_delay<test_clock>> coro_scheduler;
+    scheduler_delay<test_clock> coro_scheduler;
     unsigned int resume_count1{0};
     unsigned int resume_count2{0};
     unsigned int resume_count3{0};
@@ -114,29 +111,24 @@ void test_interleaving_coroutines(void) {
     constexpr auto total_time = delay3 * iterations3;
 
 
-    resuming_on_delay(coro_scheduler, delay1, iterations1, resume_count1);
-    resuming_on_delay(coro_scheduler, delay2, iterations2, resume_count2);
-    resuming_on_delay(coro_scheduler, delay3, iterations3, resume_count3);
+    auto task1 = resuming_on_delay(coro_scheduler, delay1, iterations1, resume_count1);
+    auto task2 = resuming_on_delay(coro_scheduler, delay2, iterations2, resume_count2);
+    auto task3 = resuming_on_delay(coro_scheduler, delay3, iterations3, resume_count3);
 
     const auto start_time = test_clock::now();
     auto elapsed_time = start_time  - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
-        if (!pending) {
-            break;
-        }
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
         elapsed_time = start_time  - test_clock::now();
-    } while (elapsed_time < total_time);
+    } while (!(task1.done() && task2.done() && task3.done()));
 
     TEST_ASSERT_EQUAL_UINT(resume_count1, iterations1);
     TEST_ASSERT_EQUAL_UINT(resume_count2, iterations2);
     TEST_ASSERT_EQUAL_UINT(resume_count3, iterations3);
-
-
 }
 
 template<typename SCHEDULER>
@@ -158,36 +150,33 @@ nop_task nested_level1(
     collect_flags |= 0x1;
     co_await scheduled_delay{ scheduler,  24ms};
     collect_flags |= 0x2;
-    nested_level2(scheduler, collect_flags);
+    auto task2 = nested_level2(scheduler, collect_flags);
     collect_flags |= 0x4;
-
+    (void)task2; // TODO - what happens here.
 }
 
 
 void test_nested_coroutines(void) {
 
-    scheduler<schedule_by_delay<test_clock>> coro_scheduler;
+    scheduler_delay<test_clock> coro_scheduler;
     unsigned int cover_flags{0};
 
     constexpr auto total_time = 24ms + 124ms + 33ms + 1ms; // 1ms margin
 
-    nested_level1(coro_scheduler, cover_flags);
+    auto task1 = nested_level1(coro_scheduler, cover_flags);
 
     const auto start_time = test_clock::now();
     auto elapsed_time = start_time  - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
-        if (!pending) {
-            break;
-        }
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
         elapsed_time = start_time  - test_clock::now();
-    } while (elapsed_time < total_time);
+    } while (!(task1.done()) || !coro_scheduler.empty());
 
-    TEST_ASSERT_EQUAL_UINT(cover_flags, 0x77);
+    TEST_ASSERT_EQUAL_HEX(0x77, cover_flags);
 
 }
 

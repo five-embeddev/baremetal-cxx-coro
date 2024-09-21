@@ -14,7 +14,9 @@ extern void test_single_coroutine();
 extern void test_interleaving_coroutines();
 extern void test_nested_coroutines();
 extern void test_single_prio_coroutine();
-
+extern void test_single_unordered_coroutine();
+extern void test_double_unordered_coroutine();
+extern void test_double_unordered_coroutine_blocking_patterns();
 
 void setUp(void) {
     // There is no global state for the co-routine implementation.
@@ -32,6 +34,9 @@ int runUnityTests(void) {
   RUN_TEST(test_interleaving_coroutines);
   RUN_TEST(test_nested_coroutines);
   RUN_TEST(test_single_prio_coroutine);
+  RUN_TEST(test_single_unordered_coroutine);
+  RUN_TEST(test_double_unordered_coroutine);
+  RUN_TEST(test_double_unordered_coroutine_blocking_patterns);
   return UNITY_END();
 }
 

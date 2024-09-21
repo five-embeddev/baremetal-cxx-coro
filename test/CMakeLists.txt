@@ -14,7 +14,7 @@ ExternalProject_Add(
 ExternalProject_Get_Property(unity_project install_dir)
 include_directories(${install_dir}/include/unity)
 
-add_executable(unit_tests test_static_list.cpp test_timer_coro.cpp test_priority_coro.cpp unit_tests.cpp ../src/startup.cpp)
+add_executable(unit_tests test_static_list.cpp test_timer_coro.cpp test_priority_coro.cpp test_unordered.cpp unit_tests.cpp ../src/startup.cpp)
 
 target_include_directories(unit_tests PRIVATE )
 target_compile_features(unit_tests PUBLIC cxx_std_20)
@@ -22,4 +22,4 @@ target_compile_features(unit_tests PUBLIC cxx_std_20)
 add_dependencies(unit_tests unity_project)
 target_link_libraries(unit_tests ${install_dir}/lib/libunity.a)
 
-add_test(NAME unit_tests_run COMMAND $<TARGET_FILE:unit_tests>)
+add_test(NAME unit_tests_run COMMAND $<TARGET_FILE:unit_tests> --output-on-failure)
