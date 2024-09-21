@@ -24,10 +24,10 @@
 #include "coro/awaitable_unordered.hpp"
 
 template<class SCHEDULER>
-nop_task single_coro_loop(SCHEDULER &a,
+nop_task single_coro_loop(SCHEDULER& a,
                           const unsigned int run_count,
                           volatile unsigned int& resume_count) {
-    
+
     for (unsigned int i = 0; i < run_count; i++) {
         co_await a;
         resume_count = i + 1;
@@ -35,12 +35,12 @@ nop_task single_coro_loop(SCHEDULER &a,
 }
 
 template<class SCHEDULER>
-nop_task double_coro_loop(SCHEDULER &a,
-                          SCHEDULER &b,
+nop_task double_coro_loop(SCHEDULER& a,
+                          SCHEDULER& b,
                           const unsigned int run_count,
                           volatile unsigned int& resume_count_a,
                           volatile unsigned int& resume_count_b) {
-    
+
     for (unsigned int i = 0; i < run_count; i++) {
         co_await a;
         resume_count_a = i + 1;
@@ -51,10 +51,10 @@ nop_task double_coro_loop(SCHEDULER &a,
 
 
 void test_single_unordered_coroutine(void) {
-    // Inttialize coroutine 
+    // Inttialize coroutine
     // Class to manage timer co-routines
     scheduler_unordered a;
-    unsigned int resume_count{0};
+    unsigned int resume_count{ 0 };
     constexpr unsigned int iterations = 10;
 
     auto task = single_coro_loop(a, iterations, resume_count);
@@ -66,12 +66,12 @@ void test_single_unordered_coroutine(void) {
 }
 
 void test_double_unordered_coroutine(void) {
-    // Inttialize coroutine 
+    // Inttialize coroutine
     // Class to manage timer co-routines
     scheduler_unordered a;
     scheduler_unordered b;
-    unsigned int resume_count_a{0};
-    unsigned int resume_count_b{0};
+    unsigned int resume_count_a{ 0 };
+    unsigned int resume_count_b{ 0 };
     constexpr unsigned int iterations = 10;
 
     auto task = double_coro_loop(a, b, iterations, resume_count_a, resume_count_b);
@@ -85,16 +85,16 @@ void test_double_unordered_coroutine(void) {
 }
 
 void test_double_unordered_coroutine_blocking_patterns(void) {
-    // Inttialize coroutine 
+    // Inttialize coroutine
     // Class to manage timer co-routines
     scheduler_unordered a;
     scheduler_unordered b;
-    unsigned int resume_count_a{0};
-    unsigned int resume_count_b{0};
+    unsigned int resume_count_a{ 0 };
+    unsigned int resume_count_b{ 0 };
     constexpr unsigned int iterations = 10;
 
     auto task = double_coro_loop(a, b, iterations, resume_count_a, resume_count_b);
-    fprintf(stderr, "Task @ %p\n", (void*) &task);
+    fprintf(stderr, "Task @ %p\n", (void*)&task);
 
     // Just resume a
     for (unsigned int i = 0; i < iterations; i++) {
@@ -131,7 +131,7 @@ void test_double_unordered_coroutine_blocking_patterns(void) {
     TEST_ASSERT_EQUAL_UINT(resume_count_a, 6);
     TEST_ASSERT_EQUAL_UINT(resume_count_b, 6);
 
-    // Close out 
+    // Close out
     do {
         a.resume();
         b.resume();
@@ -139,6 +139,3 @@ void test_double_unordered_coroutine_blocking_patterns(void) {
     TEST_ASSERT_EQUAL_UINT(resume_count_a, iterations);
     TEST_ASSERT_EQUAL_UINT(resume_count_b, iterations);
 }
-
-
-

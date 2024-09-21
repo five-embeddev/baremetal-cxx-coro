@@ -5,7 +5,7 @@ CMAKE_OPTIONS_native=\
 	-DCMAKE_BUILD_TYPE=Debug
 
 CMAKE_OPTIONS_target=\
-	-DCMAKE_TOOLCHAIN_FILE=${RISCV_CMAKE} 
+	-DCMAKE_TOOLCHAIN_FILE=${RISCV_CMAKE}
 
 TARGET_ELF=build_target/src/main.elf
 
@@ -23,7 +23,7 @@ native target:
 native_test : native
 	cd build_native; ctest
 
-.PHONY : docker_target docker_native 
+.PHONY : docker_target docker_native
 docker_target docker_native :
 	docker build --tag=cxx_coro_riscv:latest .
 	docker run \
@@ -68,7 +68,7 @@ cppcheck:
 		--suppress=mismatchingContainers \
 	    ${ALL_SRC}
 
-# Run 
+# Run
 SPIKE_CMD_FILE=run_spike.cmd
 .PHONY: spike_sim
 spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
@@ -86,3 +86,9 @@ spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
 
 clean:
 	rm -rf build_target build_native
+
+
+pre-commit :
+	pip install pre-commit
+	pre-commit install
+	pre-commit run --all-files

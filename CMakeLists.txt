@@ -14,24 +14,24 @@ if(ENABLE_ASAN)
   add_link_options(-fsanitize=address)
 endif()
 
-#   -fno-exceptions 
-#   -fno-use-cxa-atexit 
- 
+#   -fno-exceptions
+#   -fno-use-cxa-atexit
+
 add_compile_options(
-  -std=c++20 
-  -Os 
-  -g 
-  -Wall 
-  -ffunction-sections 
-  -fno-rtti 
-  -fno-nonansi-builtins  
-  -fno-threadsafe-statics 
-  -nostartfiles  
-  -fcoroutines 
-  -Wextra 
-  -Wpedantic 
+  -std=c++20
+  -Os
+  -g
+  -Wall
+  -ffunction-sections
+  -fno-rtti
+  -fno-nonansi-builtins
+  -fno-threadsafe-statics
+  -nostartfiles
+  -fcoroutines
+  -Wextra
+  -Wpedantic
   -fno-diagnostics-color
-  -Werror 
+  -Werror
   )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
@@ -48,12 +48,12 @@ else()
 
   # Linker control
   add_link_options(
-    -nostartfiles 
-    -Xlinker 
-    --defsym=__stack_size=${STACK_SIZE} 
-    -T ${LINKER_SCRIPT} 
+    -nostartfiles
+    -Xlinker
+    --defsym=__stack_size=${STACK_SIZE}
+    -T ${LINKER_SCRIPT}
     -Wl,-Map=${TARGET}.map)
-  
+
 endif()
 
 set(CMAKE_CXX_STANDARD 20)

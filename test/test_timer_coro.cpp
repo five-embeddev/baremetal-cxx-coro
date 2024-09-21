@@ -50,8 +50,6 @@ void sleep_for(test_clock::duration delay) {
 #endif
 
 
-
-
 /**  A simple task to schedule
  * @tparam SCHEDULER    The type of scheduler that will manage this co-routine's execution.
  * @param scheduler     The actual of scheduler that will manage this co-routine's execution.
@@ -72,36 +70,36 @@ nop_task resuming_on_delay(
 
 
 void test_single_coroutine(void) {
-    // Inttialize coroutine 
-    // Class to manage timer co-routines 
+    // Inttialize coroutine
+    // Class to manage timer co-routines
     scheduler_delay<test_clock> coro_scheduler;
-    unsigned int resume_count{0};
+    unsigned int resume_count{ 0 };
     constexpr unsigned int iterations = 10;
     constexpr auto delay = 100ms;
     constexpr auto total_time = delay * iterations;
     auto task = resuming_on_delay(coro_scheduler, delay, iterations, resume_count);
 
     const auto start_time = test_clock::now();
-    auto elapsed_time = start_time  - test_clock::now();
+    auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
-        elapsed_time = start_time  - test_clock::now();
+        elapsed_time = start_time - test_clock::now();
     } while (!task.done());
     TEST_ASSERT_EQUAL_UINT(resume_count, iterations);
 }
 
 void test_interleaving_coroutines(void) {
 
-    // Inttialize coroutine 
+    // Inttialize coroutine
     // Class to manage timer co-routines
     scheduler_delay<test_clock> coro_scheduler;
-    unsigned int resume_count1{0};
-    unsigned int resume_count2{0};
-    unsigned int resume_count3{0};
+    unsigned int resume_count1{ 0 };
+    unsigned int resume_count2{ 0 };
+    unsigned int resume_count3{ 0 };
     constexpr unsigned int iterations1 = 11;
     constexpr unsigned int iterations2 = 12;
     constexpr unsigned int iterations3 = 13;
@@ -116,14 +114,14 @@ void test_interleaving_coroutines(void) {
     auto task3 = resuming_on_delay(coro_scheduler, delay3, iterations3, resume_count3);
 
     const auto start_time = test_clock::now();
-    auto elapsed_time = start_time  - test_clock::now();
+    auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
-        elapsed_time = start_time  - test_clock::now();
+        elapsed_time = start_time - test_clock::now();
     } while (!(task1.done() && task2.done() && task3.done()));
 
     TEST_ASSERT_EQUAL_UINT(resume_count1, iterations1);
@@ -134,51 +132,47 @@ void test_interleaving_coroutines(void) {
 template<typename SCHEDULER>
 nop_task nested_level2(
     SCHEDULER& scheduler,
-    unsigned int &collect_flags) {
+    unsigned int& collect_flags) {
     collect_flags |= 0x10;
-    co_await scheduled_delay{ scheduler,  124ms};
+    co_await scheduled_delay{ scheduler, 124ms };
     collect_flags |= 0x20;
-    co_await scheduled_delay{ scheduler, 33ms};
-    collect_flags |= 0x40;    
+    co_await scheduled_delay{ scheduler, 33ms };
+    collect_flags |= 0x40;
 }
 
 template<typename SCHEDULER>
 nop_task nested_level1(
     SCHEDULER& scheduler,
-    unsigned int &collect_flags) {
+    unsigned int& collect_flags) {
 
     collect_flags |= 0x1;
-    co_await scheduled_delay{ scheduler,  24ms};
+    co_await scheduled_delay{ scheduler, 24ms };
     collect_flags |= 0x2;
     auto task2 = nested_level2(scheduler, collect_flags);
     collect_flags |= 0x4;
-    (void)task2; // TODO - what happens here.
+    (void)task2;// TODO - what happens here.
 }
 
 
 void test_nested_coroutines(void) {
 
     scheduler_delay<test_clock> coro_scheduler;
-    unsigned int cover_flags{0};
+    unsigned int cover_flags{ 0 };
 
-    constexpr auto total_time = 24ms + 124ms + 33ms + 1ms; // 1ms margin
+    constexpr auto total_time = 24ms + 124ms + 33ms + 1ms;// 1ms margin
 
     auto task1 = nested_level1(coro_scheduler, cover_flags);
 
     const auto start_time = test_clock::now();
-    auto elapsed_time = start_time  - test_clock::now();
+    auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
         auto [pending, next_wake] = coro_scheduler.update(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
-        elapsed_time = start_time  - test_clock::now();
+        elapsed_time = start_time - test_clock::now();
     } while (!(task1.done()) || !coro_scheduler.empty());
 
     TEST_ASSERT_EQUAL_HEX(0x77, cover_flags);
-
 }
-
-
-

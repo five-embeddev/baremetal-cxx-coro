@@ -9,6 +9,5 @@ pwd
 cmake \
         -DCMAKE_TOOLCHAIN_FILE=`pwd`/cmake/riscv.cmake \
         -B build \
-        -S src 
+        -S src
 cmake --build build --verbose
-

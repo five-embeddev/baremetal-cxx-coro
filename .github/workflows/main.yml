@@ -23,7 +23,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: checkout 
+      - name: checkout
         uses: actions/checkout@v3
         with:
             submodules: recursive
@@ -35,7 +35,7 @@ jobs:
         with:
           workspace: ${{ github.workspace }}
       - name: Get the output time
-        run: echo "The time was ${{ steps.build.outputs.start_time }} -> ${{ steps.build.outputs.end_time }}"   
+        run: echo "The time was ${{ steps.build.outputs.start_time }} -> ${{ steps.build.outputs.end_time }}"
 
       - name: TestForest Dashboard
         uses: test-summary/action@v2.2
@@ -54,5 +54,3 @@ jobs:
             build_docker_target/src/*.map
             build_docker_target/src/*.s
             build_docker_native/results.xml
-
-

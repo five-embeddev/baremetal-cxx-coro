@@ -19,7 +19,7 @@ Source Code
 - include/coro/awaitable_timer.hpp - C++20 awaitable timer concept
 - include/riscv
 - include/riscv/timer.hpp - RISC-V Timer Driver
-- include/riscv/riscv-csr.hpp / 
+- include/riscv/riscv-csr.hpp /
 - include/riscv/riscv-interrupts.hpp - RISC-V Hardware Support
 - include/native
 
@@ -45,7 +45,7 @@ GitHub/Docker CI
 
 Source Code Check/Formatting
 
-- make cppcheck - Run clang-tidy and cppcheck 
+- make cppcheck - Run clang-tidy and cppcheck
 - make clang_tidy_native - Run clang-tidy in native mode
 - make clang_tidy_target - Run clang-tidy in target mode
 - make format - Run clang-format
@@ -113,3 +113,7 @@ docker run \
        ./
 
 ~~~
+
+#  Pre Commit
+
+https://pre-commit.com/

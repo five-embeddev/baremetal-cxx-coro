@@ -23,28 +23,28 @@ void setUp(void) {
 }
 
 void tearDown(void) {
-  // clean stuff up here
+    // clean stuff up here
 }
 
 
 int runUnityTests(void) {
-  UNITY_BEGIN();
-  RUN_TEST(test_static_list_insert_remove);
-  RUN_TEST(test_single_coroutine);
-  RUN_TEST(test_interleaving_coroutines);
-  RUN_TEST(test_nested_coroutines);
-  RUN_TEST(test_single_prio_coroutine);
-  RUN_TEST(test_single_unordered_coroutine);
-  RUN_TEST(test_double_unordered_coroutine);
-  RUN_TEST(test_double_unordered_coroutine_blocking_patterns);
-  return UNITY_END();
+    UNITY_BEGIN();
+    RUN_TEST(test_static_list_insert_remove);
+    RUN_TEST(test_single_coroutine);
+    RUN_TEST(test_interleaving_coroutines);
+    RUN_TEST(test_nested_coroutines);
+    RUN_TEST(test_single_prio_coroutine);
+    RUN_TEST(test_single_unordered_coroutine);
+    RUN_TEST(test_double_unordered_coroutine);
+    RUN_TEST(test_double_unordered_coroutine_blocking_patterns);
+    return UNITY_END();
 }
 
 // WARNING!!! PLEASE REMOVE UNNECESSARY MAIN IMPLEMENTATIONS //
 
 /**
-  * For native dev-platform or for some embedded frameworks
-  */
+ * For native dev-platform or for some embedded frameworks
+ */
 int main(void) {
-  return runUnityTests();
+    return runUnityTests();
 }

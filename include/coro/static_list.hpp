@@ -27,7 +27,7 @@ class static_list_allocator {
         : pool_{ buffer_.data(), buffer_.size() }
         , allocator_{ &pool_ } {
     }
-    std::array<uint8_t, N*(sizeof(T) + LIST_ELEM_SIZE)> buffer_;
+    std::array<uint8_t, N * (sizeof(T) + LIST_ELEM_SIZE)> buffer_;
     std::pmr::monotonic_buffer_resource pool_;
     std::pmr::polymorphic_allocator<T> allocator_;
 };
@@ -89,8 +89,8 @@ namespace {
             }
             return *this;
         }
-        friend auto operator<=>(const static_list_iterator<T, N, REVERSE>& lhs,
-                                const static_list_iterator<T, N, REVERSE>& rhs) = default;
+        friend auto operator<= > (const static_list_iterator<T, N, REVERSE>& lhs,
+                                  const static_list_iterator<T, N, REVERSE>& rhs) = default;
 
       private:
         static_list_node<T>* v_{ nullptr };

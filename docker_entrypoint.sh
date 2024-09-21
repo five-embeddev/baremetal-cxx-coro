@@ -16,7 +16,7 @@ else
 fi
 
 # Remove $1 from args.
-shift 
+shift
 
 # Default path
 if [ "$#" == "0" ]; then
@@ -33,9 +33,9 @@ PROJECT_SRC=baremetal-cxx-coro-dev
 
 for target in $build_type ; do
     BUILD_DIR=${BUILD_BASE}_$target
-    
+
     echo "Using: BUILD_DIR=${BUILD_DIR}, PROJECT_SRC=${PROJECT_SRC}"
-    
+
     rm -rf  ${BUILD_DIR}
     mkdir -p ${BUILD_DIR}
 
@@ -44,7 +44,7 @@ for target in $build_type ; do
     else
         EXTRA_ARGS="-DCMAKE_BUILD_TYPE=Debug"
     fi
-    
+
     cmake \
        -DCMAKE_MAKE_PROGRAM=make \
        ${EXTRA_ARGS} \
@@ -52,7 +52,7 @@ for target in $build_type ; do
        -B ${BUILD_DIR} \
        -S .
     cmake --build ${BUILD_DIR}
-    
+
     if [ "$?" != "0" ] ; then
        echo "CMAKE: ${PROJECT_SRC}; Build failed: $?"
        rc=$[$rc + 1]
@@ -76,7 +76,7 @@ else
    echo "CMAKE: ${PROJECT_SRC}; Test success"
 fi
 
-    
+
 time=$(date)
 echo "::set-output name=end_time::$time"
 

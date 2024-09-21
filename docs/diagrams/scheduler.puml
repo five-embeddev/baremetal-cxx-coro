@@ -105,7 +105,7 @@ package "Five Embeddev Baremetal Coroutines" {
     end note
 
 
-    coroutine_handle "1" -down-o "1"  schedule_entry 
+    coroutine_handle "1" -down-o "1"  schedule_entry
     schedule_entry "1" o--  WAKE_CONDITION_T
 
     class scheduler_ordered<WAKE_CONDITION_T,MAX_TASKS>  {

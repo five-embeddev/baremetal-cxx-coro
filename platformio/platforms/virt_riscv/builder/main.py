@@ -17,8 +17,14 @@ from platform import system
 from os import makedirs
 from os.path import isdir, join
 
-from SCons.Script import (ARGUMENTS, COMMAND_LINE_TARGETS, AlwaysBuild,
-                          Builder, Default, DefaultEnvironment)
+from SCons.Script import (
+    ARGUMENTS,
+    COMMAND_LINE_TARGETS,
+    AlwaysBuild,
+    Builder,
+    Default,
+    DefaultEnvironment,
+)
 
 
 env = DefaultEnvironment()
@@ -36,9 +42,8 @@ env.Replace(
     RANLIB=platform.get_tool_path("gcc-ranlib"),
     SIZETOOL=platform.get_tool_path("size"),
     ARFLAGS=["rc"],
-    SIZEPRINTCMD='$SIZETOOL -d $SOURCES',
-    
-    PROGSUFFIX=".elf"
+    SIZEPRINTCMD="$SIZETOOL -d $SOURCES",
+    PROGSUFFIX=".elf",
 )
 
 # Allow user to override via pre:script
@@ -48,14 +53,11 @@ if env.get("PROGNAME", "program") == "program":
 env.Append(
     BUILDERS=dict(
         ElfToHex=Builder(
-            action=env.VerboseAction(" ".join([
-                "$OBJCOPY",
-                "-O",
-                "ihex",
-                "$SOURCES",
-                "$TARGET"
-            ]), "Building $TARGET"),
-            suffix=".hex"
+            action=env.VerboseAction(
+                " ".join(["$OBJCOPY", "-O", "ihex", "$SOURCES", "$TARGET"]),
+                "Building $TARGET",
+            ),
+            suffix=".hex",
         )
     )
 )
@@ -86,8 +88,8 @@ target_buildprog = env.Alias("buildprog", target_hex, target_hex)
 #
 
 target_size = env.Alias(
-    "size", target_elf,
-    env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE"))
+    "size", target_elf, env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE")
+)
 AlwaysBuild(target_size)
 
 #

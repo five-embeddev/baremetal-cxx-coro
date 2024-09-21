@@ -71,7 +71,7 @@
           <description>PLIC Interrupt Enable Register 2.</description>
           <addressOffset>0x002004</addressOffset>
         </register>
-        
+
         <register>
           <name>THRESHOLD</name>
           <description>PLIC Interrupt Priority Threshold Register.</description>
