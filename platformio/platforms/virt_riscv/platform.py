@@ -82,6 +82,17 @@ class Virt_riscvPlatform(PlatformBase):
                 result[key] = self._add_default_debug_tools(result[key])
         return result
 
+    def configure_debug_session(self, debug_config):
+        print(debug_config.program_path)
+        result = super().get_boards()
+        board = self._BOARDS_CACHE['spike-hifive1']
+        debug = board.manifest.get("debug", {})
+        for spike in ("spike", "vcd_spike"):
+            args = debug["tools"][spike]["server"]["arguments"]
+            for i, arg in enumerate(args):
+                if arg == "__ELF_FILE__":
+                    args[i] = debug_config.program_path
+
     def _add_default_debug_tools(self, board):
         debug = board.manifest.get("debug", {})
         upload_protocols = board.manifest.get("upload",
@@ -89,33 +100,68 @@ class Virt_riscvPlatform(PlatformBase):
         if "tools" not in debug:
             debug["tools"] = {}
 
-        tools = ("qemu",)
-        for tool in tools:
-            if tool in ("qemu"):
-                if not debug.get("%s_machine" % tool):
-                    continue
-            elif (tool not in upload_protocols or tool in debug["tools"]):
-                continue
-            if tool == "qemu":
-                machine64bit = "64" in board.get("build.mabi")
-                debug_args = debug.get("qemu_options")
-                if debug_args is None:
-                    debug_args = []
-                debug["tools"][tool] = {
-                    "server": {
-                        "package": "tool-qemu-riscv",
-                        "arguments": [
-                            "-nographic",
-                            "-machine", "sifive_e", #debug.get("qemu_machine"),
-                            "-d", "unimp,guest_errors",
-                            "-gdb", "tcp::42123",
-                            "-S"
-                        ] + debug_args,
-                        "executable": "bin/qemu-system-riscv%s" % (
-                            "64" if machine64bit else "32")
-                    }
-                }
+        machine64bit = "64" in board.get("build.mabi")
+        debug_args = debug.get("qemu_options")
+        if debug_args is None:
+            debug_args = []
+        debug["tools"]["qemu"] = {
+            "server": {
+                "package": "tool-qemu-riscv",
+                    "arguments": [
+                        "-nographic",
+                        "-icount", "shift=1,align=off", # Ensure clock is not synced to realtime (align=off)
+                        "-machine", "sifive_e", #debug.get("qemu_machine"),
+                        "-d", "unimp,guest_errors",
+                        "-gdb", "tcp::42123",
+                        "-S"
+                    ] + debug_args,
+                    "executable": "bin/qemu-system-riscv%s" % (
+                        "64" if machine64bit else "32")
+            }
+        }
 
+        RISCV_ISA="rv32imac"
+        RISCV_PRIV="m"
+        BOARD_MEM="0x8000000:0x2000,0x80000000:0x4000,0x20010000:0x6a120"
+        print(os.path.join(self.config.get("platformio", "core_dir")))
+        print(self.config)
+        WORKSPACE_DIR=self.config.get("platformio", "workspace_dir"),
+        BUILD_DIR=self.config.get("platformio", "build_dir"),
+
+        volumes = ["-v", f".:/project"]
+        for v in [ f"{x}:{x}" for x in WORKSPACE_DIR]:
+            volumes.append("-v")
+            volumes.append(v)
+
+        for spike in ("spike", "vcd_spike"):
+            debug_args = debug.get("spike_options")
+            if debug_args is None:
+                debug_args = []
+
+            if spike == "vcd_spike":
+                debug_args += ["--vcd-log=test.vcd"]
+                docker_image = "fiveembeddev/forked_riscv_spike_debug_sim:latest" 
+            else:
+                docker_image = "fiveembeddev/riscv_spike_debug_sim:latest" 
+
+            debug["tools"][spike] = {
+
+                "server": {
+                    "arguments": [
+                        "run",
+                        "-p", "3333:3333",
+                        "--rm"
+                    ] + volumes + [
+                        docker_image
+                    ] + debug_args + [
+	    	        "__ELF_FILE__"
+                    ],
+                    "executable": "docker"
+                }
+        }
+            
         board.manifest["debug"] = debug
+        print(board)
+        print(debug)
         return board
 
