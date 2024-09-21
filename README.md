@@ -85,6 +85,16 @@ The tools can be found at: https://xpack.github.io/dev-tools/riscv-none-elf-gcc/
 	cmake --build build_target --verbose
 ~~~
 
+#### Testing
+
+The `Makefile` has targets to build with CMake and run tests with CTest.
+
+~~~
+make native
+nake native_test
+~~~
+
+
 ### Docker
 
 The included dockerfile installs the [xpack RISC-V GCC

@@ -1,8 +1,12 @@
 #!/bin/bash
-# USAGE: ./docker_entrypoint.sh <path to git volume> <path to project source with CMakelist.txt>
+# USAGE: ./docker_entrypoint.sh <native or target> <path to git volume> <path to project source with CMakelist.txt>
 
 time=$(date)
 echo "::set-output name=start_time::$time"
+
+build_type=$1
+# Remove $1 from args.
+shift
 
 if [ -d $1 ] ; then
     echo "Changing to working directory: $1"
@@ -27,7 +31,7 @@ rc=0
 
 PROJECT_SRC=baremetal-cxx-coro-dev
 
-for target in target native ; do
+for target in $build_type ; do
     BUILD_DIR=${BUILD_BASE}_$target
     
     echo "Using: BUILD_DIR=${BUILD_DIR}, PROJECT_SRC=${PROJECT_SRC}"

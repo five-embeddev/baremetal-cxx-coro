@@ -7,6 +7,8 @@ CMAKE_OPTIONS_native=\
 CMAKE_OPTIONS_target=\
 	-DCMAKE_TOOLCHAIN_FILE=${RISCV_CMAKE} 
 
+TARGET_ELF=build_target/src/main.elf
+
 all: native target native_test
 
 .PHONY : native target
@@ -21,13 +23,14 @@ native target:
 native_test : native
 	cd build_native; ctest
 
-.PHONY : docker
-docker:
+.PHONY : docker_target docker_native 
+docker_target docker_native :
 	docker build --tag=cxx_coro_riscv:latest .
 	docker run \
        -it \
        -v `pwd`:/work \
        cxx_coro_riscv:latest \
+	   ${@:docker_%=%} \
        /work \
        .
 
@@ -64,6 +67,22 @@ cppcheck:
 	    --suppress=comparePointers \
 		--suppress=mismatchingContainers \
 	    ${ALL_SRC}
+
+# Run 
+SPIKE_CMD_FILE=run_spike.cmd
+.PHONY: spike_sim
+spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
+	docker run \
+		-it \
+		--rm \
+		-v .:/project \
+		fiveembeddev/forked_riscv_spike_debug_sim:latest  \
+		--vcd-log=spike_sim.vcd \
+		--max-cycles=10000000  \
+	    --debug-cmd=${SPIKE_CMD_FILE} \
+		--log spike_sim.log \
+		build_target/src/main.elf
+
 
 clean:
 	rm -rf build_target build_native
