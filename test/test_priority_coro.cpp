@@ -44,7 +44,7 @@ void test_single_prio_coroutine(void) {
     auto task = resuming_on_priority(coro_scheduler, iterations, resume_count);
 
     do {
-        (void)coro_scheduler.update(schedule_by_priority{ 0 });
+        (void)coro_scheduler.resume(schedule_by_priority{ 0 });
     } while (!task.done());
     TEST_ASSERT_EQUAL_UINT(resume_count, iterations);
 }

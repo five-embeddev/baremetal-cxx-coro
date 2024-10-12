@@ -2,7 +2,10 @@
 set ( TARGET main )
 
 # add the executable
-add_executable(${TARGET}.elf ${TARGET}.cpp startup.cpp  )
+add_executable(${TARGET}.elf startup.cpp
+                            example_simple.cpp
+                            example_timer.cpp
+                            example_irq.cpp ${TARGET}.cpp)
 
 set_target_properties(${TARGET}.elf PROPERTIES LINK_DEPENDS "${LINKER_SCRIPT}")
 

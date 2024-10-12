@@ -31,6 +31,7 @@ add_compile_options(
   -Wextra
   -Wpedantic
   -fno-diagnostics-color
+  -Wno-unused-function
   -Werror
   )
 

@@ -83,7 +83,7 @@ void test_single_coroutine(void) {
     auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
-        auto [pending, next_wake] = coro_scheduler.update(now);
+        auto [pending, next_wake] = coro_scheduler.resume(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
@@ -117,7 +117,7 @@ void test_interleaving_coroutines(void) {
     auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
-        auto [pending, next_wake] = coro_scheduler.update(now);
+        auto [pending, next_wake] = coro_scheduler.resume(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }
@@ -167,7 +167,7 @@ void test_nested_coroutines(void) {
     auto elapsed_time = start_time - test_clock::now();
     do {
         schedule_by_delay<test_clock> now;
-        auto [pending, next_wake] = coro_scheduler.update(now);
+        auto [pending, next_wake] = coro_scheduler.resume(now);
         if (next_wake) {
             sleep_for(next_wake->delay());
         }

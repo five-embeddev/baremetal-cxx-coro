@@ -9,7 +9,7 @@
 #ifndef RISCV_ISA_HPP
 #define RISCV_ISA_HPP
 
-void wfi() {
+static void wfi() {
     // Nop (pthread yeild?)
 }
 

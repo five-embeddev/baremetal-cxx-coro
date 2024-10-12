@@ -66,12 +66,13 @@ namespace riscv {
     };
 
 
-    struct {
+    struct csr_s {
         mcause_emul mcause;
         mtvec_emul mtvec;
         mie_emul mie;
         mstatus_emul mstatus;
-    } csrs;
+    };
+    static csr_s csrs;
 
 };// namespace riscv
 
