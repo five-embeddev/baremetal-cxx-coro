@@ -1,4 +1,5 @@
 @startuml
+!theme materia-outline
 
 package "C++ Language Concepts" {
 

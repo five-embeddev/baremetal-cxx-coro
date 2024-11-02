@@ -69,18 +69,27 @@ cppcheck:
 	    ${ALL_SRC}
 
 # Run
-SPIKE_CMD_FILE=run_spike.cmd
+RISCV_ISA=rv32imac_zicsr
+SPIKE_CMD_FILE=run_spike_simple.cmd
+SPIKE_MMAP=0x8000000:0x2000,0x80000000:0x4000,0x20010000:0x6a120
 .PHONY: spike_sim
 spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
 	docker run \
 		-it \
 		--rm \
 		-v .:/project \
-		fiveembeddev/forked_riscv_spike_debug_sim:latest  \
+		fiveembeddev/forked_riscv_spike_dev_env:latest  \
+		/opt/riscv-isa-sim/bin/spike \
+        -l \
+        --log=spike_sim.log \
+        --isa=${RISCV_ISA} \
+	    -m${SPIKE_MMAP} \
+       --priv=m \
+		--pc=0x20010000 \
 		--vcd-log=spike_sim.vcd \
 		--max-cycles=10000000  \
+        -d \
 	    --debug-cmd=${SPIKE_CMD_FILE} \
-		--log spike_sim.log \
 		build_target/src/main.elf
 
 

@@ -1,12 +1,40 @@
 @startuml
+!theme materia-outline
 
 left to right direction
 
+package lang_concepts {}
+
+note left of lang_concepts
+The <i>nop_task</i> class is returned by functions that will
+implement tasks using co-routines.
+
+e.g.
+
+nop_task my_task(...) {
+    ...
+   co_await ...;
+    ...
+   co_return;
+}
+
+int main() {
+    ...
+    // Create a task t that runs asyncronously
+    // to main()
+    auto t = my_task(...);
+    ...
+}
+end note
+
+
 package "C++ Language Concepts" as lang_concepts {
 
-note as link
-[[https://en.cppreference.com/w/cpp/language/coroutines From C++ Reference]]
-end note
+
+
+   note as link
+   [[https://en.cppreference.com/w/cpp/language/coroutines From C++ Reference]]
+   end note
 
 
    interface "C++ 20 Coroutine Promise" as cpp20_coro_promise {

@@ -90,10 +90,11 @@ class Virt_riscvPlatform(PlatformBase):
         board = self._BOARDS_CACHE["spike-hifive1"]
         debug = board.manifest.get("debug", {})
         for spike in ("spike", "vcd_spike"):
-            args = debug["tools"][spike]["server"]["arguments"]
-            for i, arg in enumerate(args):
-                if arg == "__ELF_FILE__":
-                    args[i] = debug_config.program_path
+            if spike in debug["tools"] and "server" in debug["tools"][spike]:
+                args = debug["tools"][spike]["server"]["arguments"]
+                for i, arg in enumerate(args):
+                    if arg == "__ELF_FILE__":
+                        args[i] = debug_config.program_path
 
     def _add_default_debug_tools(self, board):
         debug = board.manifest.get("debug", {})

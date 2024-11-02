@@ -1,4 +1,5 @@
 @startuml
+!theme materia-outline
 
 
 package "std" as std1 {
@@ -112,7 +113,7 @@ package "Five Embeddev Baremetal Coroutines" {
         +{static} make_condition(...): WAKE_CONDITION_T
         +empty(): bool
         +insert(handle: coroutine_handle, wake_condition: WAKE_CONDITION_T)
-        +update(ready_condition: WAKE_CONDITION_T): bool, WAKE_CONDITION_T
+        +resume(ready_condition: WAKE_CONDITION_T): bool, WAKE_CONDITION_T
         -waiting_[MAX_TASKS]: static_list<schedule_entry>
     }
     SCHEDULER_T <|-up- scheduler_ordered

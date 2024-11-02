@@ -1,4 +1,26 @@
 @startuml
+!theme materia-outline
+
+package cpp_concepts {}
+
+note left of cpp_concepts
+
+This diagram shows the classes used
+to implement a co-routine that is
+suspended for a length of time
+specified in std::chono::microseconds.
+It uses the <b>co_await</b> keyword to
+insert a co-routine handle and delay into
+into a task scheduler of type <i>SCHEDULER_T</i>.
+
+e.g.
+
+SCHEDULER_T s; // task scheduler
+std::chrono::microseconds wait_t; // delay
+<b>co_await</b> <i>scheduled_delay</i>{ s, wait_t };
+
+
+end note
 
 package "C++ Language Concepts" as cpp_concepts {
 
@@ -21,6 +43,7 @@ package "C++ Language Concepts" as cpp_concepts {
 }
 
 
+
 package "C++ Stdlib, std"  as cpp_stdlib {
     class coroutine_handle<PROMISE_T>
     package "chrono" {
@@ -41,6 +64,17 @@ package "Five Embeddev Baremetal Coroutines" as five_embeddev {
        +{operator} co_await(scheduled_delay &&) : awaitable_timer<SCHEDULER_T>
     }
 
+    note right of co_await
+    We override the operator <b>co_await</b>
+    to take a <i>scheduled_delay</i> struct
+    and use it to create an <i>awaitable_timer</i> class
+    that implements the C++ awaitable co-routine
+    concept.
+
+    The <i>scheduled_delay</i> stuct is an agregate type
+    that binds the delay specification and delay implementation.
+    end note
+
     co_await_lang <|-down- co_await
 
     co_await "consumes" .-- scheduled_delay
@@ -53,7 +87,7 @@ package "Five Embeddev Baremetal Coroutines" as five_embeddev {
     scheduled_delay o-down- SCHEDULER_T
     scheduled_delay o-- DELAY_T
 
-    class awaitable_timer<SCHEDULER_T=scheduler_ordered, DELAY_T=microsecondsx> {
+    class awaitable_timer<SCHEDULER_T=scheduler_ordered, DELAY_T=microseconds> {
        + awaitable_timer(s: SCHEDULER_T, d: DELAY_T)
        + await_ready(): bool
        + await_suspend(coroutine_handle<>)

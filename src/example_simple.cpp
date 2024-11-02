@@ -17,6 +17,7 @@
 #include "debug/trace.hpp"
 
 static volatile uint64_t timestamp_simple{ 0 };
+static volatile uint64_t timestamp_resume[10] = { 0 };
 static volatile uint32_t resume_simple{ 0 };
 
 
@@ -27,7 +28,7 @@ static volatile uint32_t resume_simple{ 0 };
  * @param resume_count  Count the number of times this co-routine wakes up. For introspection only.
  */
 template<typename SCHEDULER>
-nop_task resuming_on_delay(
+nop_task periodic(
     SCHEDULER& scheduler,
     std::chrono::microseconds period,
     volatile uint32_t& resume_count) {
@@ -53,7 +54,7 @@ void example_simple(riscv_cpu_t& core) {
     mtimer.set_time_cmp(mtimer_clock::duration::zero());
 
     // Run two concurrent loops. The first loop wil run concurrently to the second loop.
-    auto t = resuming_on_delay(scheduler, 100ms, resume_simple);
+    auto t = periodic(scheduler, 100ms, resume_simple);
     (void)t;
 
     // The periodic interrupt lambda function.
@@ -79,7 +80,9 @@ void example_simple(riscv_cpu_t& core) {
     do {
         // Get a delay to the next co-routine wakup
         schedule_by_delay<mtimer_clock> now;
+        timestamp_simple = mtimer.get_time<driver::timer<>::timer_ticks>().count();
         auto [pending, next_wake] = scheduler.resume(now);
+        timestamp_resume[resume_simple] = mtimer.get_time<driver::timer<>::timer_ticks>().count();
         if (pending) {
             // Next wakeup
             mtimer.set_time_cmp(next_wake->delay());

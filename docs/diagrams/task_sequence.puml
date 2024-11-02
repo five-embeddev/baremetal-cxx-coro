@@ -1,4 +1,5 @@
 @startuml
+!theme cerulean
 
 box "CPU"
     participant "Interrupt\ncontroller" as ic

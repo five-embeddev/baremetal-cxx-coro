@@ -1,4 +1,5 @@
 @startuml
+!theme cerulean
 
 box "Active Function"
     participant "Standard Function:\nmain()" as main
