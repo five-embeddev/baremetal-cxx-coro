@@ -21,7 +21,11 @@ namespace driver {
         // freedom-e-sdk/bsp/sifive-hifive1-revb/core.dts
         // psdlfaltclk: clock@6
         // Fixed to 32Khz
+#if defined(TARGET_MTIME_FREQ_HZ)
+        static constexpr unsigned int MTIME_FREQ_HZ = TARGET_MTIME_FREQ_HZ;
+#else
         static constexpr unsigned int MTIME_FREQ_HZ = 32768;
+#endif
     };
 
     /** Default definintion of a the memory mapped mtimer CSR registers.

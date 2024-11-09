@@ -72,6 +72,23 @@ cppcheck:
 RISCV_ISA=rv32imac_zicsr
 SPIKE_CMD_FILE=run_spike_simple.cmd
 SPIKE_MMAP=0x8000000:0x2000,0x80000000:0x4000,0x20010000:0x6a120
+SPIKE_PC=0x20010000
+TRACE_VARS=\
+     timestamp_simple \
+     timestamp_resume \
+     timestamp_resume_0 \
+     timestamp_resume_1 \
+     timestamp_resume_2 \
+     timestamp_resume_3 \
+     timestamp_resume_4 \
+     timestamp_resume_5 \
+     timestamp_resume_6 \
+     timestamp_resume_7 \
+     timestamp_resume_8 \
+     timestamp_resume_9 \
+     resume_simple
+
+
 .PHONY: spike_sim
 spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
 	docker run \
@@ -85,12 +102,47 @@ spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
         --isa=${RISCV_ISA} \
 	    -m${SPIKE_MMAP} \
        --priv=m \
-		--pc=0x20010000 \
+		--pc=${SPIKE_PC} \
 		--vcd-log=spike_sim.vcd \
 		--max-cycles=10000000  \
         -d \
-	    --debug-cmd=${SPIKE_CMD_FILE} \
+	     --debug-cmd=${SPIKE_CMD_FILE} \
 		build_target/src/main.elf
+
+.PHONY: spike_sim_local
+spike_sim_local : ${SPIKE_CMD_FILE} ${TARGET_ELF}
+	/opt/spike/bin/spike \
+        -l \
+        --log=spike_sim.log \
+        --isa=${RISCV_ISA} \
+	    -m${SPIKE_MMAP} \
+       --priv=m \
+		--pc=${SPIKE_PC} \
+		--vcd-log=spike_sim.vcd \
+		--max-cycles=10000000  \
+		${TRACE_VARS:%=--trace-var=%} \
+		build_target/src/main.elf
+
+
+spike_gdb :
+		docker run \
+		-it \
+		--rm \
+		-v .:/project \
+		-v `pwd`:`pwd` \
+		fiveembeddev/forked_riscv_spike_debug_gdb:latest \
+	     --debug-cmd=run_spike_simple.cmd \
+		--vcd-log=coro.vcd  \
+		${TRACE_VARS:%=--trace-var=%} \
+		build_target/src/main.elf
+
+addr_map:
+		docker run \
+			--rm \
+			-v .:/project \
+			fiveembeddev/riscv_gtkwave_base:latest \
+			/opt/riscv-gtkwave/bin/decode_addr \
+			build_target/src/main.elf addr_map
 
 
 clean:

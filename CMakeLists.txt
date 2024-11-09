@@ -42,7 +42,7 @@ set ( STACK_SIZE 0xf00 )
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
   add_compile_options(-DHOST_EMULATION -D__riscv_xlen=32)
 else()
-  add_compile_options(-march=${CMAKE_SYSTEM_PROCESSOR})
+  add_compile_options(-march=${CMAKE_SYSTEM_PROCESSOR} -DTARGET_MTIME_FREQ_HZ=10000000)
 
   SET(LINKER_SCRIPT "${PROJECT_SOURCE_DIR}/src/linker.lds")
   SET(MY_CMAKE_FLAGS "-DCMAKE_TOOLCHAIN_FILE=${PROJECT_SOURCE_DIR}/cmake/riscv.cmake")

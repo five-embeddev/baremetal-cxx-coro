@@ -16,10 +16,35 @@
 
 #include "debug/trace.hpp"
 
-static volatile uint64_t timestamp_simple{ 0 };
-static volatile uint64_t timestamp_resume[10] = { 0 };
-static volatile uint32_t resume_simple{ 0 };
+extern "C" {
 
+volatile uint64_t timestamp_simple{ 0 };
+volatile uint64_t timestamp_resume_0{ 0 };
+volatile uint64_t timestamp_resume_1{ 0 };
+volatile uint64_t timestamp_resume_2{ 0 };
+volatile uint64_t timestamp_resume_3{ 0 };
+volatile uint64_t timestamp_resume_4{ 0 };
+volatile uint64_t timestamp_resume_5{ 0 };
+volatile uint64_t timestamp_resume_6{ 0 };
+volatile uint64_t timestamp_resume_7{ 0 };
+volatile uint64_t timestamp_resume_8{ 0 };
+volatile uint64_t timestamp_resume_9{ 0 };
+
+volatile uint64_t* timestamp_resume[10]{
+    &timestamp_resume_0,
+    &timestamp_resume_1,
+    &timestamp_resume_2,
+    &timestamp_resume_3,
+    &timestamp_resume_4,
+    &timestamp_resume_5,
+    &timestamp_resume_6,
+    &timestamp_resume_7,
+    &timestamp_resume_8,
+    &timestamp_resume_9,
+};
+
+volatile uint32_t resume_simple{ 0 };
+};
 
 /**  A simple task to schedule
  * @tparam SCHEDULER    The type of scheduler that will manage this co-routine's execution.
@@ -32,8 +57,10 @@ nop_task periodic(
     SCHEDULER& scheduler,
     std::chrono::microseconds period,
     volatile uint32_t& resume_count) {
+    driver::timer<> mtimer;
     for (auto i = 0; i < 10; i++) {
         co_await scheduled_delay{ scheduler, period };
+        *timestamp_resume[resume_count] = mtimer.get_time<driver::timer<>::timer_ticks>().count();
         resume_count = i + 1;
     }
 }
@@ -54,7 +81,7 @@ void example_simple(riscv_cpu_t& core) {
     mtimer.set_time_cmp(mtimer_clock::duration::zero());
 
     // Run two concurrent loops. The first loop wil run concurrently to the second loop.
-    auto t = periodic(scheduler, 100ms, resume_simple);
+    auto t = periodic(scheduler, 1ms, resume_simple);
     (void)t;
 
     // The periodic interrupt lambda function.
@@ -82,7 +109,6 @@ void example_simple(riscv_cpu_t& core) {
         schedule_by_delay<mtimer_clock> now;
         timestamp_simple = mtimer.get_time<driver::timer<>::timer_ticks>().count();
         auto [pending, next_wake] = scheduler.resume(now);
-        timestamp_resume[resume_simple] = mtimer.get_time<driver::timer<>::timer_ticks>().count();
         if (pending) {
             // Next wakeup
             mtimer.set_time_cmp(next_wake->delay());

@@ -89,8 +89,8 @@ namespace {
             }
             return *this;
         }
-        friend auto operator<= > (const static_list_iterator<T, N, REVERSE>& lhs,
-                                  const static_list_iterator<T, N, REVERSE>& rhs) = default;
+        friend auto operator<=>(const static_list_iterator<T, N, REVERSE>& lhs,
+                                const static_list_iterator<T, N, REVERSE>& rhs) = default;
 
       private:
         static_list_node<T>* v_{ nullptr };
