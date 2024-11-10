@@ -1,0 +1,48 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sun Nov 10 14:43:59 2024
+[*]
+[dumpfile] "/home/five/five-embeddev-wsl/baremetal-cxx-coro/spike_sim.fst"
+[dumpfile_mtime] "Sun Nov 10 14:12:28 2024"
+[dumpfile_size] 461885
+[savefile] "/home/five/five-embeddev-wsl/baremetal-cxx-coro/spike_sim.gtkw"
+[timestart] 3013938
+[size] 1908 987
+[pos] -1 -1
+*-8.794865 3015104 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] riscv_isa_sim.
+[treeopen] riscv_isa_sim.core0.
+[sst_width] 214
+[signals_width] 595
+[sst_expanded] 1
+[sst_vpaned_height] 288
+@24
+riscv_isa_sim.clint.mtime[63:0]
+riscv_isa_sim.clint.mtimecmp0[63:0]
+@4023
+^>1 /home/five/five-embeddev-wsl/baremetal-cxx-coro/filter_addr.sh
+riscv_isa_sim.core0.processor.jump_pc[63:0]
+@4022
+^>2 /home/five/five-embeddev-wsl/baremetal-cxx-coro/filter_opcode.sh
+riscv_isa_sim.core0.processor.insn[63:0]
+@28
+riscv_isa_sim.core0.interrupts.mei
+riscv_isa_sim.core0.interrupts.msi
+riscv_isa_sim.core0.interrupts.mti
+@22
+riscv_isa_sim.core0.vars.resume_simple[31:0]
+@24
+riscv_isa_sim.core0.vars.timestamp_resume[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_0[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_1[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_2[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_3[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_4[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_5[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_6[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_7[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_8[63:0]
+riscv_isa_sim.core0.vars.timestamp_resume_9[63:0]
+riscv_isa_sim.core0.vars.timestamp_simple[63:0]
+[pattern_trace] 1
+[pattern_trace] 0
