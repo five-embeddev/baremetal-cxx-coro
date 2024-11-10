@@ -90,51 +90,61 @@ TRACE_VARS=\
 
 
 .PHONY: spike_sim
-spike_sim : ${SPIKE_CMD_FILE} ${TARGET_ELF}
-	docker run \
+spike_sim : ${TARGET_ELF}
+	-docker run \
 		-it \
 		--rm \
 		-v .:/project \
 		fiveembeddev/forked_riscv_spike_dev_env:latest  \
 		/opt/riscv-isa-sim/bin/spike \
-        -l \
         --log=spike_sim.log \
         --isa=${RISCV_ISA} \
 	    -m${SPIKE_MMAP} \
-       --priv=m \
-		--pc=${SPIKE_PC} \
-		--vcd-log=spike_sim.vcd \
-		--max-cycles=10000000  \
-        -d \
-	     --debug-cmd=${SPIKE_CMD_FILE} \
-		build_target/src/main.elf
-
-.PHONY: spike_sim_local
-spike_sim_local : ${SPIKE_CMD_FILE} ${TARGET_ELF}
-	/opt/spike/bin/spike \
-        -l \
-        --log=spike_sim.log \
-        --isa=${RISCV_ISA} \
-	    -m${SPIKE_MMAP} \
-       --priv=m \
+        --priv=m \
 		--pc=${SPIKE_PC} \
 		--vcd-log=spike_sim.vcd \
 		--max-cycles=10000000  \
 		${TRACE_VARS:%=--trace-var=%} \
 		build_target/src/main.elf
+	docker run \
+	     --rm \
+		 -v .:/project \
+	     fiveembeddev/riscv_gtkwave_base:latest \
+	     vcd2fst spike_sim.vcd spike_sim.fst
 
 
-spike_gdb :
-		docker run \
+.PHONY: spike_sim_local
+spike_sim_local : ${SPIKE_CMD_FILE} ${TARGET_ELF}
+	/opt/spike/bin/spike \
+        --log=spike_sim_local.log \
+        --isa=${RISCV_ISA} \
+	    -m${SPIKE_MMAP} \
+       --priv=m \
+		--pc=${SPIKE_PC} \
+		--vcd-log=spike_sim_local.vcd \
+		--max-cycles=10000000  \
+		${TRACE_VARS:%=--trace-var=%} \
+		build_target/src/main.elf
+	vcd2fst spike_sim_local.vcd spike_sim_local.fst
+
+
+spike_gdb : ${TARGET_ELF}
+	docker run \
 		-it \
 		--rm \
 		-v .:/project \
 		-v `pwd`:`pwd` \
 		fiveembeddev/forked_riscv_spike_debug_gdb:latest \
-	     --debug-cmd=run_spike_simple.cmd \
-		--vcd-log=coro.vcd  \
+		--vcd-log=spike_gdb.vcd  \
 		${TRACE_VARS:%=--trace-var=%} \
-		build_target/src/main.elf
+		${TARGET_ELF}
+	docker run \
+	     --rm \
+		 -v .:/project \
+	     fiveembeddev/riscv_gtkwave_base:latest \
+	     vcd2fst spike_gdb.vcd spike_gdb.fst
+
+
 
 addr_map:
 		docker run \
