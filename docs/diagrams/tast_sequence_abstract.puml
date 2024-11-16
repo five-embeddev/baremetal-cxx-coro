@@ -1,6 +1,16 @@
 @startuml
 !theme cerulean
 
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+skinparam ParticipantPadding 5
+skinparam BoxPadding 5
+skinparam handwritten true
+skinparam ArrowFontSize 20
+skinparam noteFontSize 20
+skinparam participantFontSize 20
+
 box "Active Function"
     participant "Standard Function:\nmain()" as main
     participant "Co-routine:\nperiodic()" as coro

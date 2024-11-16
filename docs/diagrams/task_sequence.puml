@@ -1,14 +1,29 @@
 @startuml
+
+
+
 !theme cerulean
+
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+skinparam ParticipantPadding 5
+skinparam BoxPadding 5
+skinparam handwritten true
+skinparam ArrowFontSize 20
+skinparam noteFontSize 20
+skinparam participantFontSize 20
+
+
 
 box "CPU"
     participant "Interrupt\ncontroller" as ic
 end box
 
 box "Active Functions"
+    participant "isr_handler()" as isr
     participant "main()" as main
     participant "nop_task\nresuming_on_delay(\nSCHEDULER_T &schedule,\nstd::chrono::microseconds period,\nvolatile uint32_t& resume_count)" as coro
-    participant "isr_handler()" as isr
 end box
 
 box "Object Space"
@@ -19,21 +34,21 @@ end box
 
 '' Power on
 activate ic
-    ic -> main : reset, enter main()
+    ic -> main : reset,\nenter: main()
 
     '' Enter main()
     activate main
-        main -> scheduler : construct scheduler_delay<> scheduler;
+        main -> scheduler : construct:\nscheduler_delay<> scheduler;
 
         activate scheduler
-            scheduler -> waiting: construct static_list<> waiting;
-            note right
+            scheduler -> waiting: construct:\nstatic_list<> waiting;
+            rnote over waiting
                 waiting list = []
             end note
 
             activate waiting
                 main -> main : resume_count = 0
-                main -> coro : call resuming_on_delay(scheduler, 100ms, resume_count)
+                main -> coro : call:\nresuming_on_delay(\n    scheduler, 100ms, resume_count)
 
                 '' First call
             deactivate main
@@ -44,12 +59,12 @@ activate ic
                 coro -> awaitable : construct-\nawaitable_timer awaitable{schedule,100ms}
                 activate awaitable
                     coro -> awaitable : awaitable.await_suspend(handle)
-                    awaitable -> scheduler : scheduler.insert(handle, now() + 100ms)
+                    awaitable -> scheduler : scheduler.insert(\n    handle, now() + 100ms)
                     note right
                         now() = 0ms
                     end note
-                    scheduler -> waiting : waiting.emplace(handle, 0ms + 100ms)
-                    note right
+                    scheduler -> waiting : waiting.emplace(\n    handle, 0ms + 100ms)
+                    rnote over waiting
                         waiting list = [{handle, 0ms + 100ms}]
                     end note
                     waiting -> scheduler : return
@@ -68,11 +83,11 @@ newpage
                         scheduler -> waiting : waiting.begin()
                         waiting -> scheduler : i = {handle, i*100ms + 100ms}
                         scheduler -> main : return true, i*100ms + 100ms
-                        main -> ic : timer deadline = i*100ms + 100ms
+                        main -> ic : timer:\ndeadline = i*100ms + 100ms
                         main -> ic : wfi enter
                     deactivate main
 
-                    ic -> isr : timer interrupt = i*100ms + 100ms
+                    ic -> isr : timer:\ninterrupt = i*100ms + 100ms
                     activate isr
                         isr -> ic : exit
                     deactivate isr
@@ -86,7 +101,7 @@ newpage
                         scheduler -> waiting : waiting.begin()
                         waiting -> scheduler : i = {handle, i*100ms + 100ms}
                         scheduler -> waiting : erase(i)
-                        note right
+                        rnote over waiting
                             waiting list = []
                         end note
                         scheduler -> coro : handle.resume()
@@ -95,16 +110,16 @@ newpage
                 deactivate awaitable
                 activate coro
                     coro -> coro: resume_count = i + 1
-                    coro -> coro : run until co_await scheduled_delay{schedule,100ms}
-                    coro -> awaitable : construct awaitable_timer awaitable{schedule,100ms}
+                    coro -> coro : run until:\nco_await scheduled_delay{schedule,100ms}
+                    coro -> awaitable : construct:\nawaitable_timer awaitable{schedule,100ms}
                 activate awaitable
                     coro -> awaitable : await_suspend(handle)
-                    awaitable -> scheduler : scheduler.insert(handle, now() + 100ms)
+                    awaitable -> scheduler : scheduler.insert(\n   handle, now() + 100ms)
                     note right
                         now() = i*100ms + 100ms
                     end note
-                    scheduler -> waiting : waiting.emplace(handle, i*100ms + 100ms + 100ms)
-                    note right
+                    scheduler -> waiting : waiting.emplace(\n    handle, i*100ms + 100ms + 100ms)
+                    rnote over waiting
                         waiting list = [{handle, i*100ms + 100ms}]
                     end note
                     waiting -> scheduler : return
@@ -143,7 +158,7 @@ newpage
                 scheduler -> waiting : waiting.begin()
                 waiting -> scheduler : i = {handle, 9*100ms + 100ms}
                 scheduler -> waiting : erase(i)
-                note right
+                rnote over waiting
                     waiting list = []
                 end note
                 scheduler -> coro : handle.resume()

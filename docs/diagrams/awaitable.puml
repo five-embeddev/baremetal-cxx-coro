@@ -1,5 +1,11 @@
 @startuml
 !theme materia-outline
+skinparam handwritten true
+skinparam Padding 1
+skinparam ClassAttributeFontSize 20
+skinparam ClassFontSize 20
+skinparam NoteFontSize 20
+
 
 package cpp_concepts {}
 
