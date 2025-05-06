@@ -2,6 +2,10 @@
 
 Example of using baremetal C++ Co-routines with RISC-V.
 
+Details in the following articles
+- [Exploring C++20 coroutines for embedded](https://philmulholland.medium.com/c-20-coroutines-re-entrant-scheduled-tasks-no-os-required-061c20efafad) ([alt link](https://five-embeddev.com/articles/2024/11/24/part-2-cpp20-coroutines-short/))
+- [Building a header-only C++20 coroutine runtime](https://philmulholland.medium.com/c-20-coroutines-a-header-only-runtime-for-re-entrant-tasks-87cb8e2c0ee1) ([alt link](https://five-embeddev.com/articles/2024/11/24/part-1-cpp20-coroutines-runtime/))
+
 The code will initialize the C++ run-time environment and jump to main
 and create a set of periodic co-routines. The co-routines will be
 timed using the machine mode timer and scheduled using the event loop
